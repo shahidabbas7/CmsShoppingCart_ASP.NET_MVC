@@ -1,0 +1,79 @@
+﻿@model IEnumerable<CmsShoppingCart.Models.ViewModels.PageVM>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Pages List</h2>
+
+<p>
+    @Html.ActionLink("add New page", "addpage")
+</p>
+@if (!Model.Any())
+{
+    <h1>No Page found</h1>
+}
+else
+{
+    <table class="table sorting" id="pages">
+        <tr class="home">
+            <th>
+                Title
+            </th>
+            <th>
+                Slug
+            </th>
+            <th>
+                Sidebar
+            </th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr id="id_@item.id" class="@item.Slug">
+                <td>
+                    @Html.DisplayFor(modelItem => item.Title)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Slug)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.HasSidebar)
+                </td>
+                <td>
+                    @Html.ActionLink("Edit", "Editpage", new { id = item.id }) |
+                    @Html.ActionLink("Details", "pageDetails", new { id = item.id }) |
+                    @if (item.Title != "home")
+                    {
+                        @Html.ActionLink("Delete", "Deletepage", new { id = item.id }, new { @class = "delete" })
+                    }
+
+                </td>
+            </tr>
+        }
+
+    </table>
+}
+@section Scripts {
+    <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js"></script>
+    <script>
+        $(function () {
+            /* delete page*/
+            $("a.delete").click(function () {
+                if (!confirm("Confirm Page Deletion")) return false;
+            });
+            ////////////////////////////////////
+            $("table#pages tbody").sortable({
+                items: "tr:not(.home)",
+                placeholder: "ui-state-highlight",
+                update: function(){
+                var ids= $("table#pages tbody").sortable("serialize");
+                    var url = "/Admin/Page/ReorderPage";
+                    $.post(url, ids, function (data) {
+                    });
+                }
+                });
+        });
+    </script>
+}
