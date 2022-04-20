@@ -1,5 +1,6 @@
 ﻿using CmsShoppingCart.Models.Data;
 using CmsShoppingCart.Models.ViewModels.Shop;
+using PagedList;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -170,67 +171,107 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
             //set temp data
             TempData["SM"] = "product successfully added";
             //upload image
+
             #region Upload Image
-            //create neccasrry directorories
-            var orignalDirectory = new DirectoryInfo(string.Format("{0}Images\\Uploads", Server.MapPath(@"\")));
-            var pathString1 = Path.Combine(orignalDirectory.ToString(), "Products");
-            var pathString2 = Path.Combine(orignalDirectory.ToString(), "Products\\"+id.ToString());
-            var pathString3 = Path.Combine(orignalDirectory.ToString(), "Products\\" + id.ToString()+"\\Thumbs");
-            var pathString4 = Path.Combine(orignalDirectory.ToString(), "Products\\" + id.ToString()+"\\Gallery");
-            var pathString5 = Path.Combine(orignalDirectory.ToString(), "Products\\" + id.ToString()+ "\\Gallery\\Thumbs");
-            if (Directory.Exists(pathString1))
+
+            // Create necessary directories
+            var originalDirectory = new DirectoryInfo(string.Format("{0}Images\\Uploads", Server.MapPath(@"\")));
+
+            var pathString1 = Path.Combine(originalDirectory.ToString(), "Products");
+            var pathString2 = Path.Combine(originalDirectory.ToString(), "Products\\" + id.ToString());
+            var pathString3 = Path.Combine(originalDirectory.ToString(), "Products\\" + id.ToString() + "\\Thumbs");
+            var pathString4 = Path.Combine(originalDirectory.ToString(), "Products\\" + id.ToString() + "\\Gallery");
+            var pathString5 = Path.Combine(originalDirectory.ToString(), "Products\\" + id.ToString() + "\\Gallery\\Thumbs");
+
+            if (!Directory.Exists(pathString1))
                 Directory.CreateDirectory(pathString1);
-            if (Directory.Exists(pathString2))
+
+            if (!Directory.Exists(pathString2))
                 Directory.CreateDirectory(pathString2);
-            if (Directory.Exists(pathString3))
+
+            if (!Directory.Exists(pathString3))
                 Directory.CreateDirectory(pathString3);
-            if (Directory.Exists(pathString4))
+
+            if (!Directory.Exists(pathString4))
                 Directory.CreateDirectory(pathString4);
-            if (Directory.Exists(pathString5))
+
+            if (!Directory.Exists(pathString5))
                 Directory.CreateDirectory(pathString5);
-            //check if file was uploaded
+
+            // Check if a file was uploaded
             if (file != null && file.ContentLength > 0)
             {
-                //get file extension
+                // Get file extension
                 string ext = file.ContentType.ToLower();
-                //verify file extension
-                if(ext!="image/jpeg"&&
-                    ext != "image/pjpeg"&&
-                    ext != "image/gif"&&
-                    ext != "image/x-png"&&
-                    ext != "image/png"
-                    )
+
+                // Verify extension
+                if (ext != "image/jpg" &&
+                    ext != "image/jpeg" &&
+                    ext != "image/pjpeg" &&
+                    ext != "image/gif" &&
+                    ext != "image/x-png" &&
+                    ext != "image/png")
                 {
-                    using(Contextdb db=new Contextdb())
+                    using (Contextdb db = new Contextdb())
                     {
-                        model.catagories = new SelectList(db.catagory.ToList(), "id", "Name");
-                        ModelState.AddModelError("", "the image was not uploaded-wrong extension.");
+                        model.catagories = new SelectList(db.catagory.ToList(), "Id", "Name");
+                        ModelState.AddModelError("", "The image was not uploaded - wrong image extension.");
                         return View(model);
                     }
                 }
-                //init image name
+
+                // Init image name
                 string imageName = file.FileName;
-                //save image name to dto
-                using(Contextdb db=new Contextdb())
+
+                // Save image name to DTO
+                using (Contextdb db = new Contextdb())
                 {
                     ProductsDTO dto = db.products.Find(id);
                     dto.ImageName = imageName;
+
                     db.SaveChanges();
                 }
-                //set original and thumb image paths
+
+                // Set original and thumb image paths
                 var path = string.Format("{0}\\{1}", pathString2, imageName);
                 var path2 = string.Format("{0}\\{1}", pathString3, imageName);
-                //save orignal
+
+                // Save original
                 file.SaveAs(path);
-                //create and save thumb
+
+                // Create and save thumb
                 WebImage img = new WebImage(file.InputStream);
                 img.Resize(200, 200);
                 img.Save(path2);
-
             }
+
             #endregion
             //redirect to page
             return RedirectToAction("addproduct");
         }
-    } 
+        // get: Admin/shop//products
+        public ActionResult Products(int? page,int? catid)
+        {
+            //declare list of products
+            List<ProductVM> ListOfProductVM;
+            //set page number
+            var pageNumber = page ?? 1;
+            using(Contextdb db=new Contextdb())
+            {
+                //Initialize the list
+                ListOfProductVM = db.products.ToArray()
+                        .Where(x => catid == null || catid == 0 || x.CatagoreyId== catid)
+                        .Select(x => new ProductVM(x)).ToList();
+                //populate catagorey select list
+                ViewBag.Catagories = new SelectList(db.catagory.ToList(), "id", "Name");
+                //set selected catagorey
+                ViewBag.SelectedCat = catid.ToString();
+            }
+            //set pageination
+            var onePageOfProducts = ListOfProductVM.ToPagedList(pageNumber, 3);
+            ViewBag.OnePageOfProducts = onePageOfProducts;
+            //return view with list
+            return View(ListOfProductVM);
+        }
+    }
 }
