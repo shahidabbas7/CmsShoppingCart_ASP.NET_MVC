@@ -479,6 +479,8 @@
     <Content Include="fileman\web.config" />
     <Content Include="Areas\Admin\Views\Shop\catagory.cshtml" />
     <Content Include="Areas\Admin\Views\Shop\addproduct.cshtml" />
+    <Content Include="Areas\Admin\Views\Shop\Products.cshtml" />
+    <Content Include="Areas\Admin\Views\Shop\EditProducts.cshtml" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\ckeditor\ckeditor.php" />
     <Content Include="Scripts\ckeditor\ckeditor_basic.js" />

@@ -263,7 +263,7 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
                         .Where(x => catid == null || catid == 0 || x.CatagoreyId== catid)
                         .Select(x => new ProductVM(x)).ToList();
                 //populate catagorey select list
-                ViewBag.Catagories = new SelectList(db.catagory.ToList(), "id", "Name");
+                ViewBag.Categories = new SelectList(db.catagory.ToList(), "id", "Name");
                 //set selected catagorey
                 ViewBag.SelectedCat = catid.ToString();
             }
@@ -272,6 +272,130 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
             ViewBag.OnePageOfProducts = onePageOfProducts;
             //return view with list
             return View(ListOfProductVM);
+        }
+        // get: Admin/shop//editproducts//id
+        public ActionResult EditProducts(int id)
+        {
+            //declare model vm
+            ProductVM model;
+            using(Contextdb db=new Contextdb())
+            {
+                //init product dto
+                ProductsDTO dto = db.products.Find(id);
+                //chech if product exist
+                if (dto == null)
+                {
+                    return Content("That Product Does Not exist");
+                }
+                //init model
+                model = new ProductVM(dto);
+                //get selectlist item
+                model.catagories = new SelectList(db.catagory.ToList(), "id", "Name");
+                //get all gallery images
+                model.GalleryImages = Directory.EnumerateFiles(Server.MapPath("~/Images/Uploads/Products/" + id + "/Gallery/Thumbs")).
+                    Select(fn => Path.GetFileName(fn));
+            }
+            //return view with model
+            return View(model);
+        }
+        [HttpPost]
+        // post: Admin/shop//editproducts//id
+        public ActionResult EditProducts(ProductVM model,HttpPostedFileBase file)
+        {
+            //get product id
+            int  id = model.id;
+            //populate Catagorey select list and gallery image
+            using (Contextdb db = new Contextdb()) {
+                model.catagories = new SelectList(db.catagory.ToList(), "id", "Name");
+            }
+            model.GalleryImages = Directory.EnumerateFiles(Server.MapPath("~/Images/Uploads/Products/" + id + "/Gallery/Thumbs")).
+                   Select(fn => Path.GetFileName(fn));
+            //check model state 
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+            //make sure product name is unique
+            using(Contextdb db=new Contextdb())
+            {
+                if (db.products.Where(x => x.id != id).Any(x => x.Name == model.Name))
+                {
+                    ModelState.AddModelError(" ", "name already taken");
+                    return View(model);
+                }
+            }
+            //update product
+            using(Contextdb db=new Contextdb())
+            {
+                ProductsDTO dto = new ProductsDTO();
+                dto.Name = model.Name;
+                dto.Slug = model.Name.Replace(" ", "-").ToLower();
+                dto.Description = model.Description;
+                dto.Price = model.Price;
+                dto.CatagoreyId = model.CatagoreyId;
+                CategoryDTO catdto = db.catagory.FirstOrDefault(x => x.id == model.CatagoreyId);
+                dto.CatagoreyName = catdto.Name;
+                db.products.Add(dto);
+                db.SaveChanges();
+            }
+            //set temp data
+            TempData["SM"] = "Product edited";
+            //upload image
+            #region Image Upload
+            //check for file upload
+            if(file!=null&& file.ContentLength > 0)
+            {
+                //get extension
+                string ext = file.ContentType.ToLower();
+                //verify extension
+                if (ext != "image/jpg" &&
+                   ext != "image/jpeg" &&
+                   ext != "image/pjpeg" &&
+                   ext != "image/gif" &&
+                   ext != "image/x-png" &&
+                   ext != "image/png")
+                {
+                    using (Contextdb db = new Contextdb())
+                    {
+                        ModelState.AddModelError("", "The image was not uploaded - wrong image extension.");
+                        return View(model);
+                    }
+                }
+                //set upload directory path
+                var originalDirectory = new DirectoryInfo(string.Format("{0}Images\\Uploads", Server.MapPath(@"\")));
+                var pathString1 = Path.Combine(originalDirectory.ToString(), "Products\\" + id.ToString());
+                var pathString2 = Path.Combine(originalDirectory.ToString(), "Products\\" + id.ToString() + "\\Thumbs");
+                //delete files from the directories
+                DirectoryInfo di1 = new DirectoryInfo(pathString1);
+                DirectoryInfo di2 = new DirectoryInfo(pathString2);
+                foreach (FileInfo file2 in di1.GetFiles())
+                    file2.Delete();
+                foreach (FileInfo file3 in di2.GetFiles())
+                    file3.Delete();
+                //save image name
+                string ImageName = file.FileName;
+                using(Contextdb db=new Contextdb())
+                {
+                    ProductsDTO dto = db.products.Find(id);
+                    dto.ImageName = ImageName;
+                    db.SaveChanges();
+                }
+                //save orignal and thumb image
+                var path = string.Format("{0}\\{1}", pathString1, ImageName);
+                var path2 = string.Format("{0}\\{1}", pathString2, ImageName);
+
+                // Save original
+                file.SaveAs(path);
+
+                // Create and save thumb
+                WebImage img = new WebImage(file.InputStream);
+                img.Resize(200, 200);
+                img.Save(path2);
+            }
+
+            #endregion
+            //redirect to action
+            return RedirectToAction("EditProducts");
         }
     }
 }
