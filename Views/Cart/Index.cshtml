@@ -1,0 +1,73 @@
+﻿@model IEnumerable<CmsShoppingCart.Models.Cart.CartVM>
+
+@{
+    ViewBag.Title = "Cart Detials";
+}
+
+<h2>Cart Detials</h2>
+@if (ViewBag.Message != null)
+{
+                <h3>@ViewBag.Message</h3>
+}
+else
+{
+<table class="table">
+    <tr>
+
+        <th>
+            ProductName)
+        </th>
+        <th>
+            Quantity
+        </th>
+        <th>
+            Price
+        </th>
+        <th>
+            Image
+        </th>
+        <th></th>
+        <th>
+            Total
+        </th>
+
+    </tr>
+
+@foreach (var item in Model)
+{
+<tr>
+
+    <td>
+        @Html.DisplayFor(modelItem => item.ProductName)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Quantity)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Price)
+    </td>
+    <td>
+       <img src="/Images/Uploads/Products/@item.Productid/Thumbs/@item.Image" />
+    </td>
+
+    <td>
+       <a href="#" class="increproduct">+</a>
+       <a href="#" class="decreproduct">-</a>
+       <a href="#" class="removeproduct">Remove</a>
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Total)
+    </td>
+</tr>
+}
+<tr>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td>@ViewBag.Grandtotal</td>
+</tr>
+</table>
+}

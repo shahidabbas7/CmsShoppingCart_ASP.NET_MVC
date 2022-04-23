@@ -35,12 +35,12 @@
             @Html.DisplayFor(modelItem => item.Description)
         </td>
         <td>
-            <a href="/shop/products_detials/@item.Slug">
+            <a href="/shop/products-detials/@item.Slug">
                 <img src="/Images/Uploads/Products/@item.id/Thumbs/@item.ImageName" />
             </a>
         </td>
         <td>
-            @Html.ActionLink("Details", "products_detials", new { id=item.id }) |
+            @Html.ActionLink("Details", "products-detials", new { id=item.id }) |
             
         </td>
     </tr>

@@ -308,6 +308,7 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
             using (Contextdb db = new Contextdb()) {
                 model.catagories = new SelectList(db.catagory.ToList(), "id", "Name");
             }
+            //get gallery images
             model.GalleryImages = Directory.EnumerateFiles(Server.MapPath("~/Images/Uploads/Products/" + id + "/Gallery/Thumbs")).
                    Select(fn => Path.GetFileName(fn));
             //check model state 

@@ -17,3 +17,18 @@ table.sorting.catagories td{
 .ajaxdivdt{
     position:absolute;
 }
+span.loader {
+    display: none;
+}
+span.ajaxmsg {
+    background:green;
+    color:white;
+    padding:10px;
+    display:none;
+    position:absolute;
+    bottom:0;
+}
+.ajaxcart{
+    position:relative;
+    top:5px;
+}
