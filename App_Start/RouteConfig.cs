@@ -13,6 +13,7 @@ namespace CmsShoppingCart
         {
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
+            routes.MapRoute("Account", "Account/{action}/{id}", new { Controller = "Account", Action = "index", id = UrlParameter.Optional }, new[] { "CmsShoppingCart.Controllers" });
             routes.MapRoute("Cart", "Cart/{action}/{id}", new { Controller = "Cart", Action = "index", id = UrlParameter.Optional }, new[] { "CmsShoppingCart.Controllers" });
             routes.MapRoute("shop", "shop/{action}/{name}", new { Controller = "shop", Action = "index", name = UrlParameter.Optional }, new[] { "CmsShoppingCart.Controllers" });
             routes.MapRoute("SidebarPartial", "page/SidebarPartial", new { Controller = "page", Action = "SidebarPartial" }, new[] { "CmsShoppingCart.Controllers" });

@@ -14,15 +14,18 @@
         @Model.Price
         <br />
         @Model.Description
-        <div class="addtocart">
-            <a href="#" class="addtocart">Add To Cart</a>
-            <span class="loader">
-                <img src="~/Content/images/ajax-loader.gif" />
-            </span>
-            <span class="ajaxmsg">
-                The Product has been added to your cart
-            </span>
-        </div>
+        @if (Request.IsAuthenticated)
+        {
+            <div class="addtocart">
+                <a href="#" class="addtocart">Add To Cart</a>
+                <span class="loader">
+                    <img src="~/Content/images/ajax-loader.gif" />
+                </span>
+                <span class="ajaxmsg">
+                    The Product has been added to your cart
+                </span>
+            </div>
+        }
     </div>
 </div>
 <div class="row">
@@ -56,6 +59,29 @@
         */
 
         $(".fancybox").fancybox();
+        /*
+       * addtocart
+       */
+
+        $("a.addtocart").click(function (e) {
+        e.preventDefault();
+
+        $("span.loader").addClass("ib");
+
+        var url = "/cart/AddToCartPartial";
+
+        $.get(url, { id: @Model.id }, function (data) {
+            $(".ajaxcart").html(data);
+        }).done(function () {
+            $("span.loader").removeClass("ib");
+            $("span.ajaxmsg").addClass("ib");
+            setTimeout(function () {
+                $("span.ajaxmsg").fadeOut("fast");
+                $("span.ajaxmsg").removeClass("ib");
+            }, 1000);
+        });
+        });
+        ///////////////////////////////////////////////
     });
     </script>
 }
