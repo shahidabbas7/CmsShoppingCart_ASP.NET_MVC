@@ -1,5 +1,6 @@
 ﻿using CmsShoppingCart.Models.Data;
 using CmsShoppingCart.Models.ViewModels;
+using CmsShoppingCart.Models.ViewModels.Shop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,6 +27,12 @@ namespace CmsShoppingCart.Controllers
             LoginUserVM login = new LoginUserVM();
             return View(login);
         }
+        public ActionResult Logout()
+        {
+            FormsAuthentication.SignOut();
+            return RedirectToAction("login");
+        }
+
         // GET: Account//Login
         [HttpPost]
         public ActionResult login(LoginUserVM model)
@@ -204,6 +211,54 @@ namespace CmsShoppingCart.Controllers
             TempData["SM"] = "You have edited your profile";
             //return view
             return Redirect("user-profile");
+        }
+        public ActionResult Orders()
+        {
+            //init list of orders for admin
+            List<OrderUserVM> orderuservmlist = new List<OrderUserVM>();
+            using (Contextdb db = new Contextdb())
+            {
+                //get userid
+                UsersDTO user = db.users.FirstOrDefault(x => x.Username == User.Identity.Name);
+                int userid = user.id;
+                //init list of ordervm
+                List<OrderVM> order = db.orders.Where(x=>x.Userid==userid).ToArray().Select(x => new OrderVM(x)).ToList();
+                //loop through list of ordervm
+                foreach (var item in order)
+                {
+                    //init product dictionary
+                    Dictionary<string, int> ProductAndQty = new Dictionary<string, int>();
+                    //declare total
+                    decimal total = 0m;
+                    //init list of orderdetials dto
+                    List<OrderDetialsDTO> orderdetials = db.orderdetials.Where(x => x.Orderid == item.Orderid).ToList();
+                    //loop throgh list of orderdetialsdto
+                    foreach (var orderdetial in orderdetials)
+                    {
+                        //get product 
+                        ProductsDTO product = db.products.Where(x => x.id == orderdetial.Productid).FirstOrDefault();
+                        //get price 
+                        decimal price = product.Price;
+                        //get product name
+                        string productname = product.Name;
+                        //add to product dictionary 
+                        ProductAndQty.Add(productname, orderdetial.Quantity);
+                        //get total
+                        total += orderdetial.Quantity * price;
+                        //add to orderforadmin list
+                        orderuservmlist.Add(new OrderUserVM()
+                        {
+                            OrederNumber = item.Orderid,
+                            ProductsAndQTY = ProductAndQty,
+                            Total = total,
+                            CreatedAt = item.CreatedAT
+                        });
+                    }
+                }
+
+            }
+            //return view with orderforadminvm list
+            return View(orderuservmlist);
         }
     }
 }

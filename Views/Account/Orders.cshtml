@@ -1,0 +1,51 @@
+﻿@model IEnumerable<CmsShoppingCart.Models.ViewModels.OrderUserVM>
+
+@{
+    ViewBag.Title = "Orders";
+}
+
+<h2>Orders</h2>
+@if (!Model.Any())
+{
+    <h3 class="text-center">There Are No Orders</h3>
+}
+<table class="table">
+    <tr>
+        <th>
+            OrederNumber
+        </th>
+        <th>
+        Oreder Detials
+        </th>
+        <th>
+            CreatedAt
+        </th>
+
+        <th>
+            Total
+        </th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.OrederNumber)
+            </td>
+            <td>
+                @foreach (var item2 in item.ProductsAndQTY)
+                {
+                    @item2.Key @:x @item2.Value<br />
+                }
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CreatedAt)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Total)
+            </td>
+        </tr>
+    }
+
+</table>
+

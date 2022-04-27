@@ -8,6 +8,7 @@ namespace CmsShoppingCart.Areas.Admin.Controllers
 {
     public class DashboardController : Controller
     {
+        [Authorize(Roles ="Admin")]
         // GET: Admin/Dashboard
         public ActionResult Index()
         {

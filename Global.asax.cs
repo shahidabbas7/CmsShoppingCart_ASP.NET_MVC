@@ -19,7 +19,7 @@ namespace CmsShoppingCart
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
         }
-        protected void Application_AuthenticatedRequest()
+        protected void Application_AuthenticateRequest()
         {
             //check if user is logged in
             if (User == null) { return; }

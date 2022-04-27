@@ -39,8 +39,8 @@
                         }
                     }
                     @if (Request.IsAuthenticated && User.IsInRole("User"))
-                    {
-                        if (ViewBag.Title = "User Profile")
+                        {
+                            if (ViewBag.Title == "User Profile"||ViewBag.Title=="Orders")
                         {
                             <li class="active"> @Html.Action("UserNavPartial", "account", new { area = "" })</li>
 
